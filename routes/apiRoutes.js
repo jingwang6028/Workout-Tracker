@@ -1,11 +1,18 @@
-const db = require("../models/");
-const mongoose = require("mongoose");
 const router = require("express").Router();
+const db = require("../models");
 
 // get all workouts
 router.get("api/workouts", (req, res) => {
-  db.Workout.find({})
-    .sort({ day: -1 })
+  db.Workout.aggregate([
+    {
+      $addFields: {
+        totalDuration: { $sum: "$exercises.duration" },
+        totalWeight: { $sum: "$exercises.weight" },
+        totalSets: { $sum: "$exercises.sets" },
+        totalReps: { $sum: "$exercises.reps" },
+      },
+    },
+  ])
     .then((dbData) => {
       res.json(dbData);
     })
@@ -33,9 +40,8 @@ router.put("api/workouts/:id", (req, res) => {
     { _id: req.params.id },
     {
       $push: { exercises: req.body },
-      $inc: { totalDuration: req.body.duration },
     },
-    { new: true }
+    { new: true, runValidators: true }
   )
     .then((dbData) => {
       res.json(dbData);
@@ -48,6 +54,7 @@ router.put("api/workouts/:id", (req, res) => {
 // get workouts in range
 router.get("api/workouts/range", (req, res) => {
   db.Workout.find({})
+    .limit(7)
     .then((dbData) => {
       res.json(dbData);
     })

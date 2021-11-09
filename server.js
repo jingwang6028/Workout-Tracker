@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 
 const PORT = process.env.PORT || 3000;
 
+const Workout = require("./models/Workout");
+
 const app = express();
 
 app.use(logger("dev"));
@@ -11,13 +13,13 @@ app.use(logger("dev"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// access public folder as front-end
 app.use(express.static("public"));
 
-// connect mongoose
-mongoose.connect(process.env.MONGODB_URL || "mongodb://localhost/workout", {
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/workout", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  useCreateIndex: true,
+  useFindAndModify: false,
 });
 
 app.use(require("./routes/apiRoutes"));
